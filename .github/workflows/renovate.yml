@@ -1,0 +1,19 @@
+name: Renovate Config
+
+on:
+  pull_request:
+    paths:
+      - renovate.json
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Renovate Config
+        uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.1
