@@ -51,7 +51,13 @@ func startServer(cfg Config) {
 
 func setupMux(savegameDir string) (mux *http.ServeMux) {
 	mux = http.NewServeMux()
-	mux.HandleFunc("/latest", errWrapper(handleLatest(savegameDir)))
+	mux.HandleFunc("/latest", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			handleOptions(w, r)
+			return
+		}
+		errWrapper(handleLatest(savegameDir))(w, r)
+	})
 
 	return mux
 }
@@ -84,12 +90,24 @@ func handleLatest(savegameDir string) func(w http.ResponseWriter, r *http.Reques
 			}
 		}()
 
+		setLatestHeaders(w)
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("ETag", buildSavegameETag(info))
 		http.ServeContent(w, r, info.Name(), info.ModTime(), reader)
 		return nil
 	}
+}
+
+func handleOptions(w http.ResponseWriter, _ *http.Request) {
+	setLatestHeaders(w)
+	w.WriteHeader(http.StatusNoContent)
+	_, _ = w.Write(nil)
+}
+
+func setLatestHeaders(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "https://satisfactory-calculator.com")
+	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin")
+	w.Header().Set("Cache-Control", "no-cache")
 }
 
 func openLatestSavegame(savegameDir string) (*os.File, os.FileInfo, error) {
