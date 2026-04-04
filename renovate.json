@@ -1,0 +1,83 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Routine Renovate updates with a 3-day delay and vulnerability alerts",
+  "extends": [
+    ":automergeDisabled",
+    ":disableDigestUpdates",
+    ":separateMultipleMajorReleases",
+    ":disableMajorUpdates"
+  ],
+  "minimumReleaseAge": "3 day",
+  "enabledManagers": [
+    "gomod",
+	"github-actions",
+	"custom.regex"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track golangci-lint version in GitHub workflow env",
+      "managerFilePatterns": [
+        "/^\\.github\\/workflows\\/go\\.yml$/"
+      ],
+      "matchStrings": [
+        "GOLANGCI_LINT_VERSION: (?<currentValue>v?[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "depNameTemplate": "golangci/golangci-lint",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track golangci-lint version in Makefile",
+      "managerFilePatterns": [
+        "/^Makefile$/"
+      ],
+      "matchStrings": [
+        "GOLANGCI_LINT_VERSION \\?= (?<currentValue>v?[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "depNameTemplate": "golangci/golangci-lint",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Commitizen version in cz-bump workflow",
+      "managerFilePatterns": [
+        "/^\\.github\\/workflows\\/cz-bump\\.yml$/"
+      ],
+      "matchStrings": [
+        "COMMITIZEN_VERSION: (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "depNameTemplate": "commitizen",
+      "datasourceTemplate": "pypi"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "security",
+      "dependencies"
+    ]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Group golangci-lint version updates across workflow and Makefile",
+      "matchPackageNames": [
+        "golangci/golangci-lint"
+      ],
+      "groupName": "golangci-lint"
+    },
+    {
+      "description": "Automerge safe updates for stable versions",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
+    }
+  ]
+}
