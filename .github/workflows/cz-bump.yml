@@ -1,7 +1,7 @@
 name: CZ-Bump
 
 env:
-  COMMITIZEN_VERSION: 4.13.10
+  COMMITIZEN_VERSION: 4.14.0
 
 on:
   pull_request:
